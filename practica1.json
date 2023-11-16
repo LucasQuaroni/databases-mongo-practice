@@ -1,0 +1,78 @@
+//1
+use biblioteca;
+
+//2
+db.createCollection("socios");
+
+//3
+db.createCollection("libros");
+
+//4
+show collections;
+
+//5
+db.libros.insertMany([
+    {codigo: 1,  
+        nombre: 'El aleph',
+        autor: 'Borges',
+        editoriales: ['Planeta','Siglo XXI']},
+    {codigo: 2,
+        nombre: 'Martin Fierro',
+        autor: 'Jose Hernandez',
+        editoriales: ['Planeta']},
+    {codigo: 3,  
+          nombre: 'Aprenda PHP',
+          autor: 'Mario Molina',
+          editoriales: ['Planeta']},
+    {codigo: 4,  
+          nombre: 'Java en 10 minutos',
+          autor: 'Barros Sergio',
+          editoriales: ['Planeta','Siglo XXI']
+    }])
+
+//6
+db.libros.find();
+
+//7
+db.libros.find({autor: "Borges"});
+
+//8
+db.libros.find().limit(2);
+
+//9
+db.libros.updateMany({codigo: 1},{$set: {precio: 20, cantidad: 50}});
+db.libros.updateMany({codigo: {$gt: 1}},{$set: {precio: 50, cantidad: 12}});
+
+//10
+db.libros.updateMany({codigo: 3},{$set: {precio: 50, cantidad: 20}});
+db.libros.updateMany({codigo: 4},{$set: {precio: 45, cantidad: 1}});
+
+//11
+db.libros.find({cantidad: {$gt: 10}});
+
+//12
+db.libros.find({cantidad: 50},{precio: 20});
+
+//13
+db.libros.find({$or: [{cantidad: 50},{precio: 50}]});
+
+//14
+db.libros.find({cantidad: {$ne: 50}});
+
+//15
+db.libros.find({precio: {$gte: 20, $lte: 45}});
+
+//16
+db.libros.find({editoriales: 'Siglo XXI'});
+
+//17
+db.libros.deleteOne({precio: {$gte: 50}});
+
+//18
+db.libros.updateOne({codigo: 1},{$push: {editoriales:'Atlantida'}});
+
+//19
+db.libros.replaceOne({codigo: 1},{codigo: 1, prueba: 0});
+
+//20
+db.libros.deleteOne({codigo: 1});

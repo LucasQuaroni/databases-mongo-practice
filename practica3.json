@@ -1,0 +1,354 @@
+//2
+use blog;
+
+//3
+db.createCollection("Usuarios");
+
+db.Usuarios.insertMany([
+    {
+        "Nombre": "Juan",
+        "Twitter": "JuanTwit",
+        "Descripcion": "Estudiante de Ingenieria de Software",
+        "Telefonos": ["123456789", "987654321"],
+        "Direccion": {
+            "Calle": "Av. de los Castros",
+            "Numero": 2256,
+            "Cp": 39005,
+            "Ciudad": "Santander"
+        }
+    },
+    {
+        "Nombre": "Frank",
+        "Twitter": "FrankTwit",
+        "Descripcion": "Estudiante de Ingenieria en Sistemas",
+        "Telefonos": ["123456789", "987654321", "123456789"],
+        "Direccion": {
+            "Calle": "Av. Pellegrini",
+            "Numero": 300,
+            "Cp": 2000,
+            "Ciudad": "Rosario"
+        }
+    },
+    {
+        "Nombre": "Peter",
+        "Twitter": "PeterTwit",
+        "Descripcion": "Estudiante de Ingenieria cosmica",
+        "Telefonos": ["123456789", "987654321", "123456789", "987654321"],
+        "Direccion": {
+            "Calle": "Av. de los Castros",
+            "Numero": "289s",
+            "Cp": 39005,
+            "Ciudad": "Santander"
+        }
+    }
+])
+
+//4 
+db.createCollection("Noticias");
+
+db.Noticias.insertMany([
+    {
+        "titulo": "Noticia de impacto",
+        "cuerpo": "CUERPO DE LA NOTICIA",
+        "fecha": new Date("2014-10-21"),
+        "tags": ["A", "B"],
+        "nombreU": "Juan"
+    },
+    {
+        "titulo": "Noticia de impacto2",
+        "cuerpo": "NOTICIA CB",
+        "fecha": new Date("2022-10-21"),
+        "tags": ["C", "B"],
+        "nombreU": "Juan"
+    },
+    {
+        "titulo": "Noticia de impacto3",
+        "cuerpo": "NOTICIA GB",
+        "fecha": new Date("2022-5-21"),
+        "tags": ["G", "B"],
+        "nombreU": "Peter"
+    },
+    {
+        "titulo": "Noticia de impacto4",
+        "cuerpo": "NOTICIA ZZ",
+        "fecha": new Date("2022-5-11"),
+        "tags": ["Z", "Z"],
+        "nombreU": "Peter"
+    },
+    {
+        "titulo": "Noticia de impacto5",
+        "cuerpo": "NOTICIA xx",
+        "fecha": new Date("2021-8-21"),
+        "tags": ["X", "X"],
+        "nombreU": "Frank"
+    }
+])
+
+db.Noticias.aggregate([
+    {
+        $lookup: {
+            from: "Usuarios",
+            localField: "nombreU",
+            foreignField: "Nombre",
+            as: "Usuario"
+        }
+    },
+    {
+        $unwind: "$Usuario" // Deshacer el array creado por $lookup
+    },
+    {
+        $project: {
+            "_id": 0,
+            "titulo": 1,
+            "cuerpo": 1,
+            "fecha": 1,
+            "tags": 1,
+            "Usuario.Nombre": 1,
+            "Usuario.Twitter": 1,
+            "Usuario.Descripcion": 1,
+            "Usuario.Telefonos": 1,
+            "Usuario.Direccion": 1
+        }
+    }
+]);
+
+
+//5
+db.Usuarios.aggregate([
+    {
+        $lookup: {
+            from: "Noticias",
+            localField: "Nombre",
+            foreignField: "nombreU",
+            as: "Noticias"
+        }
+    },
+    {
+        $unwind: "$Noticias"
+    },
+    {
+        $project: {
+            "_id": 0,
+            "Nombre": 1,
+            "Twitter": 1,
+            "Descripcion": 1,
+            "Telefonos": 1,
+            "Direccion": 1,
+            "Noticias.titulo": 1,
+            "Noticias.cuerpo": 1,
+            "Noticias.fecha": 1,
+            "Noticias.tags": 1
+        }
+    }
+]);
+
+//6
+db.Usuarios.aggregate([
+    {
+        $lookup: {
+            from: "Noticias",
+            localField: "Nombre",
+            foreignField: "nombreU",
+            as: "Noticias"
+        }
+    },
+    {
+        $project: {
+            "_id": 0,
+            "Nombre": 1,
+            "Twitter": 1,
+            "Descripcion": 1,
+            "Telefonos": 1,
+            "Direccion": 1,
+            "Noticias.titulo": 1,
+            "Noticias.cuerpo": 1,
+            "Noticias.fecha": 1,
+            "Noticias.tags": 1
+        }
+    }
+]);
+
+//7
+db.Usuarios.aggregate([
+    {
+        $lookup: {
+            from: "Noticias",
+            localField: "Nombre",
+            foreignField: "nombreU",
+            as: "Noticias"
+        }
+    },
+    {
+        $project: {
+            "_id": 0,
+            "Nombre": 1,
+            "Twitter": 1,
+            "Noticias.titulo": 1
+        }
+    }
+]);
+
+//8
+db.Noticias.aggregate([
+    {
+        $lookup: {
+            from: "Usuarios",
+            localField: "nombreU",
+            foreignField: "Nombre",
+            as: "Usuario"
+        }
+    },
+    {
+        $unwind: "$Usuario"
+    },
+    {
+        $project: {
+            "_id": 0,
+            "titulo": 1,
+            "cuerpo": 1,
+            "fecha": 1,
+            "tags": 1,
+            "Usuario": "$Usuario.Nombre"
+        }
+    }
+]);
+
+//8.1
+db.Noticias.aggregate([
+    {
+        $lookup: {
+            from: "Usuarios",
+            localField: "nombreU",
+            foreignField: "Nombre",
+            as: "Usuario"
+        }
+    },
+    {
+        $unwind: "$Usuario"
+    },
+    {
+        $project: {
+            "_id": 0,
+            "titulo": 1,
+            "Usuario": "$Usuario.Nombre",
+            "Twitter": "$Usuario.Twitter"
+        }
+    }
+]);
+
+//9
+db.Noticias.updateMany({}, { $set: { "cantidadPalabras": 10 } });
+
+//10
+db.Usuarios.aggregate([
+    {
+        $match: {
+            "Nombre": "Juan"
+        }
+    }
+]);
+
+//10.1
+db.Usuarios.aggregate([
+    {
+        $lookup: {
+            from: "Noticias",
+            localField: "Nombre",
+            foreignField: "nombreU",
+            as: "Noticias"
+        }
+    },
+    {
+        $match: {
+            "Nombre": "Juan",
+        }
+    },
+    {
+        $project: {
+            "_id": 0,
+            "Nombre": 1,
+            "Twitter": 1,
+            "Titulo": "$Noticias.titulo" 
+        }
+    }
+]);
+
+// 11
+db.Noticias.aggregate([
+    {
+        $lookup: {
+            from: "Usuarios",
+            localField: "nombreU",
+            foreignField: "Nombre",
+            as: "Usuario"
+        }
+    },
+    {
+        $unwind: "$Usuario"
+    },
+    {
+        $match: {
+            "Usuario.Nombre": "Juan"
+        }
+    },
+    {
+        $project: {
+            "_id": 0,
+            "titulo": 1,
+            "cuerpo": 1,
+            "fecha": 1,
+            "tags": 1,
+            "Usuario": "$Usuario.Nombre"
+        }
+    }
+]);
+
+//12
+db.Noticias.aggregate([
+    {
+        $lookup: {
+            from: "Usuarios",
+            localField: "nombreU",
+            foreignField: "Nombre",
+            as: "Usuario"
+        }
+    },
+    {
+        $unwind: "$Usuario"
+    },
+    {
+        $match: {
+            "Usuario.Nombre": "Peter"
+        }
+    },
+    {
+        $project: {
+            "_id": 0,
+            "Nombre": "$Usuario.Nombre",
+            "Twitter": "$Usuario.Twitter",
+            "Titulo": "$titulo",
+            "Cantidad de palabras": "$cantidadPalabras"
+        }
+    }
+]);
+
+
+//13
+db.Usuarios.updateMany({}, { $set: { "Edad": 20 } });
+
+//14
+db.Usuarios.aggregate([
+    {
+        $project: {
+            "_id": 0,
+            "Nombre": 1,
+            "Twitter": 1,
+            "Edad": 1
+        }
+    },
+    {
+        $sort: {
+            "Edad": 1
+        }
+    }
+]);

@@ -1,0 +1,155 @@
+// 1 - Crear una bd llamada universidad.
+use universidad;
+
+// 2 - Crear la colección Estudiantes
+db.createCollection("estudiantes");
+db.estudiantes.insertMany([
+    {
+        "Nombre": "Juana Perez",
+        "Edad": 21
+    },
+    {
+        "Nombre": "Lara Gomez",
+        "Edad": 19
+    },
+    {
+        "Nombre": "Pedro Antus",
+        "Edad": 21
+    },
+    {
+        "Nombre": "Mara Liz",
+        "Edad": 20
+    },
+    {
+        "Nombre": " Luis Gonzalez",
+        "Edad": 20
+    },
+    {
+        "Nombre": "Tomás Lopez",
+        "Edad": 22
+    },
+    {
+        "Nombre": "Ana Top",
+        "Edad": 25
+    }
+])
+
+// 3 - Mostrar los estudiantes que tengan más de 20 años.
+db.estudiantes.find({Edad: {$gt: 20}});
+
+// 4 - Agregar un campo llamado estado, y colocarle la palabra “mayor” a los alumnos que son mayores a 20 años y “menor”  a los que son menores o iguales.
+db.estudiantes.updateMany({Edad: {$gt: 20}}, {$set: {estado: "mayor"}});
+db.estudiantes.updateMany({Edad: {$lte: 20}}, {$set: {estado: "menor"}});
+
+// 5 - Modificar la edad de Juana Perez a 27 años, y el estado a mayor
+db.estudiantes.updateOne({Nombre: "Juana Perez"}, {$set: {Edad: 27, estado: "mayor"}});
+
+// 6 - Agregar la dirección de los dos primeros alumnos con el siguiente formato
+//{direccion:{ calle: xxx, numero:xxx, cp: xxx, ciudad: xxx}
+db.estudiantes.updateOne({Nombre: "Juana Perez"}, {$set: {direccion: {calle: "araoz", numero: 300, cp: 2000, ciudad: "Rosario"}}});
+db.estudiantes.updateOne({Nombre: "Lara Gomez"}, {$set: {direccion: {calle: "laprida", numero: 2320, cp: 2000, ciudad: "Rosario"}}});
+
+//7  - Crear la colección materias, cargar con 5 Materias. Agregar a las materias los nombres de los estudiantes que las cursan
+db.createCollection("materias");
+db.materias.insertMany([
+    {
+        "Codigo": 1,
+        "Nombre": "Software",
+        "Alumnos": [
+            "Ana Top",
+            "Juana Perez",
+            "Lara Gomez"
+        ],
+        "profe": "Juana Mora"
+    },
+    {
+        "Codigo": 2,
+        "Nombre": "Matemáticas",
+        "Alumnos": [
+            "Ana Top",
+            "Lara  Gomez",
+            "Pedro Antus",
+            "Mara Liz"
+        ],
+        "profe": "Juana Mora"
+    },
+    {
+        "Codigo": 3,
+        "Nombre": "Logica",
+        "Alumnos": [
+            "Ana Top",
+            "Mara Liz",
+            " Luis Gonzalez",
+            "Tomás Lopez",
+            "Ana Top"
+        ],
+        "profe": "Dario Mene"
+    }
+])
+
+//8 - Agregar a las asignaturas el campo nroAlumnos en cero
+db.materias.updateMany({},{$set: {nroAlumnos: 0}});
+
+//9 - Modificar el campo nroAlumnos por la cantidad de alumnos de la materia, contando la cantidad de alumnos del campo Alumnos
+db.materias.updateMany({},[{ $set: { nroAlumnos: {$size: "$Alumnos"} }}]);
+
+//10 -Mostrar todas las materias que cursa “Ana Top” 
+db.materias.find({Alumnos: "Ana Top"});
+
+//11 - Mostrar los detalle de las materias y el detalle de los alumnos
+db.materias.aggregate([
+    {
+        $lookup: {
+            from: "estudiantes",
+            localField: "Alumnos",
+            foreignField: "Nombre",
+            as: "Alumnos"
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            "Codigo": 1,
+            "Nombre": 1,
+            "profe": 1,
+            "Alumnos.Nombre": 1,
+            "Alumnos.Edad": 1,
+            "Alumnos.estado": 1,
+            "Alumnos.direccion": 1
+        }
+    }
+]);
+
+//12 -Mostrar los nombres de las materias y el nombre de los alumnos  que la cursan
+db.materias.aggregate([
+    {
+        $lookup: {
+            from: "estudiantes",
+            localField: "Alumnos",
+            foreignField: "Nombre",
+            as: "Alumnos"
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            "Nombre": 1,
+            "Alumnos.Nombre": 1
+        }
+    }
+]);
+
+//13 -Mostrar los nombres de las materias que cursa “Mara Liz”
+db.materias.find({Alumnos: "Mara Liz"},{_id: 0, Nombre: 1});
+
+//14 - Contar la cantidad de materias que cursa “Mara Liz”
+db.materias.find({Alumnos: "Mara Liz"}).count();
+
+//15 - Mostrar los nombres de las personas que no tengan direccion
+db.estudiantes.find({direccion: {$exists: false}}, {_id: 0, Nombre: 1});
+
+//16 -  Agregarle a la materia  “lógica”  al alumno “Luis Gonzalez”
+db.materias.updateOne({Nombre: "Logica"},{$push: {Alumnos: "Luis Gonzalez"}});
+
+//17 - Eliminar los estudiante que viven en Rosario
+db.estudiantes.deleteMany({"direccion.ciudad": "Rosario"});

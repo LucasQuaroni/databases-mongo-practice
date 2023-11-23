@@ -1,0 +1,129 @@
+"Operaciones sobre colecciones": {
+    CreateCollection: {
+        db.createCollection("nombreColeccion", {capped: true, size: 100000, max: 1000})
+    },
+    DropCollection: {
+        db.nombreColeccion.drop()
+    },
+    DeleteOne/Many: {
+        db.nombreColeccion.deleteOne({campo: valor})
+        db.nombreColeccion.deleteMany({campo: valor})
+    },
+    DropDatabase: {
+        db.dropDatabase()
+    }
+}
+
+"Operaciones sobre documentos": {
+    InsertOne/Many: {
+        db.nombreColeccion.insertOne({campo: valor})
+        db.nombreColeccion.insertMany([{campo: valor}, {campo: valor}])
+    },
+    FindOne/Many: {
+        db.nombreColeccion.findOne({campo: valor})
+        db.nombreColeccion.find({campo: valor})
+    },
+    UpdateOne/Many: {
+        db.nombreColeccion.updateOne({campo: valor}, {$set: {campo: valor}})
+        db.nombreColeccion.updateMany({campo: valor}, {$set: {campo: valor}})
+    },
+    ReplaceOne: {
+        db.nombreColeccion.replaceOne({campo: valor}, {campo: valor})
+    },
+    DeleteOne/Many: {
+        db.nombreColeccion.deleteOne({campo: valor})
+        db.nombreColeccion.deleteMany({campo: valor})
+    }
+}
+
+"Relaciones": {
+    $lookup: {
+        db.nombreColeccion.aggregate([{
+            $lookup: {
+                from: "nombreColeccionOrigen (PK)",
+                localField: "campoLocal (FK)",
+                foreignField: "campoForaneo (PK)",
+                as: "nombreCampo"
+            }
+        }])
+    },
+    $unwind: {
+        db.nombreColeccion.aggregate([{
+            $unwind: "$nombreCampo"
+        }])
+    },
+    $project: {
+        db.nombreColeccion.aggregate([{
+            $project: {
+                _id: 0,
+                campo: "$nombreCampo.campo"
+            }
+        }])
+}
+
+"Funciones al buscar": {
+    $or: {
+        db.nombreColeccion.find({$or: [{campo: valor}, {campo: valor}]})
+    },
+    $and: {
+        db.nombreColeccion.find({$and: [{campo: valor}, {campo: valor}]})
+    },
+    $not: {
+        db.nombreColeccion.find({campo: {$not: {$eq: valor}}})
+    },
+    $nor: {
+        db.nombreColeccion.find({$nor: [{campo: valor}, {campo: valor}]})
+    },
+    $in: {
+        db.nombreColeccion.find({campo: {$in: [valor, valor]}})
+    },
+    $nin: {
+        db.nombreColeccion.find({campo: {$nin: [valor, valor]}})
+    },
+    $exists: {
+        db.nombreColeccion.find({campo: {$exists: true}})
+    },
+    $type: {
+        db.nombreColeccion.find({campo: {$type: "string"}})
+    },
+    $expr: {
+        db.nombreColeccion.find({$expr: {$gt: ["$campo", "$campo"]}})
+    },
+    $jsonSchema: {
+        db.nombreColeccion.find({$jsonSchema: {campo: {$type: "string"}}})
+    },
+    $mod: {
+        db.nombreColeccion.find({campo: {$mod: [2, 0]}})
+    },
+    $regex: {
+        db.nombreColeccion.find({campo: {$regex: /valor/}})
+    },
+    $text: {
+        db.nombreColeccion.find({$text: {$search: "valor"}})
+    },
+    $where: {
+        db.nombreColeccion.find({$where: "this.campo == valor"})
+    },
+    aggregate: {
+        db.nombreColeccion.aggregate([{
+            $match: {campo: valor},
+            $group: {_id: "$campo", total: {$sum: 1}},
+            $sort: {total: -1},
+            $count: "total",
+            $limit: 10,
+            $skip: 10
+        }])
+    }
+}
+
+"Indices": {
+    CreateIndex: {
+        db.nombreColeccion.createIndex({campo: 1})
+    },
+    DropIndex: {
+        db.nombreColeccion.dropIndex({campo: 1})
+    },
+    ListIndexes: {
+        db.nombreColeccion.getIndexes()
+    }
+}
